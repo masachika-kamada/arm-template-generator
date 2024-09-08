@@ -4,11 +4,13 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 load_dotenv(Path(__file__).parent / "../.env")
+with open(Path(__file__).parent / "../prompts/system_prompt.txt", "r") as f:
+    system_prompt = f.read()
 
 
 def generate_template(prompt):
     messages = [
-        SystemMessage(content="Generate an ARM template based on the Azure Quickstart document provided by the user.  When outputting the JSON, enclose it in a code block using triple backticks."),
+        SystemMessage(content=system_prompt),
         HumanMessage(content=prompt),
     ]
     llm = AzureChatOpenAI(azure_deployment="gpt-4o", temperature=0)
