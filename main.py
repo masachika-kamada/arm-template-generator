@@ -1,9 +1,10 @@
-import sys
 import os
-from src.web_scraper import scrape_web_content
+import re
+import sys
+
 from src.llm import generate_bicep_template
 from src.urls import convert_to_en_us_url, create_directory_from_url
-import re
+from src.web_scraper import scrape_web_content
 
 
 def main():

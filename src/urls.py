@@ -1,6 +1,6 @@
-import re
 import os
-from urllib.parse import urlparse, unquote
+import re
+from urllib.parse import unquote, urlparse
 
 
 def convert_to_en_us_url(url):

@@ -1,7 +1,8 @@
-from langchain.schema import HumanMessage, SystemMessage, AIMessage
-from langchain_openai import AzureChatOpenAI
-from dotenv import load_dotenv
 from pathlib import Path
+
+from dotenv import load_dotenv
+from langchain.schema import AIMessage, HumanMessage, SystemMessage
+from langchain_openai import AzureChatOpenAI
 
 load_dotenv(Path(__file__).parent / "../.env")
 with open(Path(__file__).parent / "../prompts/system_prompt.txt", "r") as f:
