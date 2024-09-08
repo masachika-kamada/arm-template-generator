@@ -1,7 +1,8 @@
 import sys
-from src.fetch_content import fetch_content
-from src.generate_template import generate_template
-from src.urls import *
+import os
+from src.web_scraper import scrape_web_content
+from src.llm import generate_bicep_template
+from src.urls import convert_to_en_us_url, create_directory_from_url
 import re
 
 
@@ -11,45 +12,38 @@ def main():
         sys.exit(1)
 
     url = sys.argv[1]
-    url = convert_to_english_url(url)
+    url = convert_to_en_us_url(url)
     directory_path = create_directory_from_url(url)
-    print(f"directory_path: {directory_path}")
-    content = fetch_content(url)
+    print(f"Directory path: {directory_path}")
+    content = scrape_web_content(url)
     print(content)
     print("=======================================")
-    result = generate_template(content)
+    result = generate_bicep_template(content)
     print(result)
     extracted_files = extract_code_blocks(result)
 
-    # azuredeploy.bicepの保存
-    if 'azuredeploy.bicep' in extracted_files:
-        with open(os.path.join(directory_path, 'azuredeploy.bicep'), 'w') as f:
-            f.write(extracted_files['azuredeploy.bicep'])
-        print("azuredeploy.bicep saved successfully.")
-    else:
-        print("azuredeploy.bicep not found in the output.")
-
-    # azuredeploy.parameters.jsonの保存
-    if 'azuredeploy.parameters.json' in extracted_files:
-        with open(os.path.join(directory_path, 'azuredeploy.parameters.json'), 'w') as f:
-            f.write(extracted_files['azuredeploy.parameters.json'])
-        print("azuredeploy.parameters.json saved successfully.")
-    else:
-        print("azuredeploy.parameters.json not found in the output.")
+    save_file(directory_path, "azuredeploy.bicep", extracted_files)
+    save_file(directory_path, "azuredeploy.parameters.json", extracted_files)
 
 
 def extract_code_blocks(text):
-    # 正規表現で```azuredeploy.bicep```または```azuredeploy.parameters.json```で始まる行を見つける
     code_block_pattern = re.compile(r'```(azuredeploy\.bicep|azuredeploy\.parameters\.json)\n(.*?)\n```', re.DOTALL)
     matches = code_block_pattern.findall(text)
 
-    # 抽出されたコードブロックを辞書に格納して返す
     extracted_files = {}
-    for match in matches:
-        filename, code = match
+    for filename, code in matches:
         extracted_files[filename] = code
 
     return extracted_files
+
+
+def save_file(directory_path, filename, extracted_files):
+    if filename in extracted_files:
+        with open(os.path.join(directory_path, filename), "w") as f:
+            f.write(extracted_files[filename])
+        print(f"{filename} saved successfully.")
+    else:
+        print(f"{filename} not found in the output.")
 
 
 if __name__ == "__main__":

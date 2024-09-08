@@ -8,7 +8,7 @@ with open(Path(__file__).parent / "../prompts/system_prompt.txt", "r") as f:
     system_prompt = f.read()
 
 
-def generate_template(prompt):
+def generate_bicep_template(prompt):
     messages = [
         SystemMessage(content=system_prompt),
         HumanMessage(content=prompt),
