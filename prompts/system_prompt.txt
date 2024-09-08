@@ -15,10 +15,10 @@
 6. Output Format:
     Enclose the output Bicep file and parameters.json file in code blocks like:
     ```azuredeploy.bicep
-    ...
+    <content>
     ```
     ```azuredeploy.parameters.json
-    ...
+    <content>
     ```
 
 # Example Files
