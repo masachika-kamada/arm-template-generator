@@ -1,0 +1,20 @@
+When trying to deploy using `az deployment group create --resource-group quickstart --template-file azuredeploy.bicep --parameters azuredeploy.parameters.json`, the following error occurred. Please identify the cause and explain how to fix the files.
+
+Output format: Enclose the output Bicep file and parameters.json file in code blocks like:
+```azuredeploy.bicep
+<content>
+```
+```azuredeploy.parameters.json
+<content>
+```
+
+Error message:
+ERROR_MESSAGE
+
+```azuredeploy.bicep
+BICEP
+```
+
+```azuredeploy.parameters.json
+PARAMETERS_JSON
+```
