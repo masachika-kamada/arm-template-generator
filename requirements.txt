@@ -3,3 +3,7 @@ langchain
 langchain-openai
 requests
 beautifulsoup4
+azure-identity
+azure-search-documents
+langchain-community
+chardet
