@@ -1,35 +1,40 @@
 from pathlib import Path
+import re
 
 from dotenv import load_dotenv
-from langchain.schema import HumanMessage, SystemMessage
+from langchain.schema import HumanMessage, SystemMessage, AIMessage
 from langchain_openai import AzureChatOpenAI
-
-load_dotenv(Path(__file__).parent / "../.env")
-
-with open(Path(__file__).parent / "../prompts/main.txt", "r") as f:
-    system_prompt = f.read()
-with open(Path(__file__).parent / "../prompts/fix.txt", "r") as f:
-    fix_prompt = f.read()
+from src.web_scraper import scrape_web_content
 
 
-def generate_bicep_template(prompt):
-    messages = [
-        SystemMessage(content=system_prompt),
-        HumanMessage(content=prompt),
-    ]
-    llm = AzureChatOpenAI(azure_deployment="gpt-4o", temperature=0)
-    res = llm.invoke(messages)
-    return res.content
+class BicepDeployer:
+    def __init__(self):
+        load_dotenv(Path(__file__).parent / "../.env")
 
+        with open(Path(__file__).parent / "../prompts/main.txt", "r") as f:
+            self.system_prompt = f.read()
+        self.messages = [
+            SystemMessage(content=self.system_prompt)
+        ]
+        with open(Path(__file__).parent / "../prompts/fix.txt", "r") as f:
+            self.fix_prompt = f.read()
 
-def fix_bicep_template(error_message, bicep, parameters_json):
-    messages = [
-        SystemMessage(content="You are the best engineer in the world. Please answer the user's questions accurately."),
-        HumanMessage(content=fix_prompt
-                     .replace("ERROR_MESSAGE", error_message)
-                     .replace("BICEP", bicep)
-                     .replace("PARAMETERS_JSON", parameters_json)),
-    ]
-    llm = AzureChatOpenAI(azure_deployment="gpt-4o", temperature=0)
-    res = llm.invoke(messages)
-    return res.content
+        self.llm = AzureChatOpenAI(azure_deployment="gpt-4o", temperature=0.2, top_p=0.1)
+
+    def generate_bicep_template(self, mslearn_content):
+        self.messages.append(HumanMessage(content=mslearn_content))
+        res = self.llm.invoke(self.messages)
+        self.messages.append(AIMessage(content=res.content))
+        return res.content
+
+    def fix_bicep_template(self, error_message):
+        # If the error_message contains a URL, retrieve the content of that page and add it to the error_message.
+        urls = re.findall(r"https?://[^\s]+", error_message)
+        for url in urls:
+            content = scrape_web_content(url)
+            error_message += f"\n\n```{url}\n{content}\n```"
+
+        self.messages.append(HumanMessage(content=self.fix_prompt.replace("ERROR_MESSAGE", error_message)))
+        res = self.llm.invoke(self.messages)
+        self.messages.append(AIMessage(content=res.content))
+        return res.content

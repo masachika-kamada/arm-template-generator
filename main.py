@@ -2,10 +2,12 @@ import os
 import re
 import subprocess
 import sys
+import json
 
-from src.llm import generate_bicep_template, fix_bicep_template
-from src.urls import convert_to_en_us_url, create_directory_from_url
+from src.llm import BicepDeployer
+from src.urls import create_directory_from_url
 from src.web_scraper import scrape_web_content
+from src.file_io import save_files
 
 RESOURCE_GROUP = "quickstart"
 BICEP_FILE = "azuredeploy.bicep"
@@ -19,32 +21,36 @@ def main():
         sys.exit(1)
 
     url = sys.argv[1]
-    # url = convert_to_en_us_url(url)
     directory_path = create_directory_from_url(url)
     print(f"Directory path: {directory_path}")
 
     content = scrape_web_content(url)
     print(content)
-    print("=======================================")
+    print("==========")
 
-    output = generate_bicep_template(content)
-    print(output)
-
-    extracted_files = extract_code_blocks(output)
-    save_files(directory_path, extracted_files)
-
-    success, message = deploy_bicep(directory_path)
-    print(message)
-
-    for i in range(MAX_RETRIES):
+    deployer = BicepDeployer()
+    success = False
+    for i in range(1 + MAX_RETRIES):
         if success:
             break
 
-        print(f"Deployment failed. Retrying... Attempt {i + 1}")
+        if i == 0:
+            output = deployer.generate_bicep_template(content)
+        else:
+            print(f"==========\nRetrying... Attempt {i}")
+            output = deployer.fix_bicep_template(message)
 
-        output = retry_fix_and_deploy(directory_path, output)
+        extracted_files = extract_code_blocks(output)
+        save_files(directory_path, [BICEP_FILE, PARAMETERS_FILE], extracted_files)
+
         success, message = deploy_bicep(directory_path)
         print(message)
+
+    messages_dict = [{"type": message.type, "content": message.content} for message in deployer.messages]
+
+    # Save messages to a JSON file
+    with open("messages.json", "w") as f:
+        json.dump(messages_dict, f, indent=4)
 
 
 def extract_code_blocks(text):
@@ -53,23 +59,10 @@ def extract_code_blocks(text):
 
     extracted_files = {}
     for filename, code in matches:
+        # There is a possibility that file names may be duplicated in the process of creating deliverables, but they will eventually be overwritten.
         extracted_files[filename] = code
 
     return extracted_files
-
-
-def save_files(directory_path, extracted_files):
-    for filename in [BICEP_FILE, PARAMETERS_FILE]:
-        save_file(directory_path, filename, extracted_files)
-
-
-def save_file(directory_path, filename, extracted_files):
-    if filename in extracted_files:
-        with open(os.path.join(directory_path, filename), "w") as f:
-            f.write(extracted_files[filename])
-        print(f"{filename} saved successfully.")
-    else:
-        print(f"{filename} not found in the output.")
 
 
 def deploy_bicep(directory_path):
@@ -91,19 +84,6 @@ def deploy_bicep(directory_path):
         return True, result.stdout
     except subprocess.CalledProcessError as e:
         return False, e.stderr
-
-
-def retry_fix_and_deploy(directory_path, output):
-    with open(os.path.join(directory_path, BICEP_FILE), "r") as f:
-        bicep = f.read()
-    with open(os.path.join(directory_path, PARAMETERS_FILE), "r") as f:
-        parameters_json = f.read()
-
-    output = fix_bicep_template(output, bicep, parameters_json)
-    extracted_files = extract_code_blocks(output)
-    save_files(directory_path, extracted_files)
-
-    return output
 
 
 if __name__ == "__main__":

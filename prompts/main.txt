@@ -6,7 +6,7 @@
     As an engineer, generate a Bicep file and a parameters.json file based on the provided Quickstart page content.
     Ensure that the files can be deployed immediately without requiring the user to edit them.
 3. Avoiding Name Collisions:
-    Use unique values in variable definitions to avoid issues such as name collisions. 
+    Use unique values in variable definitions to avoid issues such as name collisions.
     This can be achieved using constructs like `var functionAppName = 'func-${uniqueString(resourceGroup().id)}'`, not like `param functionAppName string = 'func-${uniqueString(resourceGroup().id)}'`.
 4. Reference:
     Refer to the successfully deployed files provided below for guidance.
