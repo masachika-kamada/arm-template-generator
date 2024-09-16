@@ -19,6 +19,7 @@ class BicepDeployer:
         with open(Path(__file__).parent / "../prompts/fix.txt", "r") as f:
             self.fix_prompt = f.read()
 
+        # https://community.openai.com/t/cheat-sheet-mastering-temperature-and-top-p-in-chatgpt-api/172683
         self.llm = AzureChatOpenAI(azure_deployment="gpt-4o", temperature=0.2, top_p=0.1)
 
     def generate_bicep_template(self, mslearn_content):

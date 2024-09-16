@@ -4,3 +4,9 @@ __pycache__/
 venv/
 deploy/
 *.json
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
