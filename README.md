@@ -33,7 +33,7 @@ The ARM Template Generator is a tool designed to simplify the creation and deplo
 2. Run the script to generate the ARM template:
 
     ```
-    python main.py https://learn.microsoft.com/azure/virtual-machines/linux/quick-create-portal?tabs=ubuntu
+    python main.py https://learn.microsoft.com/ja-jp/azure/virtual-machines/linux/quick-create-portal?tabs=ubuntu
     ```
 
 ### Create Deploy Link

@@ -19,7 +19,7 @@ def main():
         sys.exit(1)
 
     url = sys.argv[1]
-    url = convert_to_en_us_url(url)
+    # url = convert_to_en_us_url(url)
     directory_path = create_directory_from_url(url)
     print(f"Directory path: {directory_path}")
 
