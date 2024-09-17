@@ -1,17 +1,19 @@
+import json
 import os
 import re
-import subprocess
 import sys
-import json
+from pathlib import Path
 
+from dotenv import load_dotenv
+
+from src.azcommand import convert_bicep_to_json, deploy_bicep
+from src.file_io import save_files
 from src.llm import BicepDeployer
 from src.urls import create_directory_from_url
 from src.web_scraper import scrape_web_content
-from src.file_io import save_files
 
-RESOURCE_GROUP = "quickstart"
-BICEP_FILE = "azuredeploy.bicep"
-PARAMETERS_FILE = "azuredeploy.parameters.json"
+load_dotenv(Path(__file__).parent / "../.env")
+
 MAX_RETRIES = 3
 
 
@@ -41,10 +43,13 @@ def main():
             output = deployer.fix_bicep_template(message)
 
         extracted_files = extract_code_blocks(output)
-        save_files(directory_path, [BICEP_FILE, PARAMETERS_FILE], extracted_files)
+        save_files(directory_path, [os.environ.get("BICEP_FILE"), os.environ.get("PARAMETERS_FILE")], extracted_files)
 
         success, message = deploy_bicep(directory_path)
         print(message)
+
+    if success:
+        convert_bicep_to_json(directory_path)
 
     messages_dict = [{"type": message.type, "content": message.content} for message in deployer.messages]
 
@@ -59,31 +64,10 @@ def extract_code_blocks(text):
 
     extracted_files = {}
     for filename, code in matches:
-        # There is a possibility that file names may be duplicated in the process of creating deliverables, but they will eventually be overwritten.
+        # Duplicate filenames may occur but will be overwritten
         extracted_files[filename] = code
 
     return extracted_files
-
-
-def deploy_bicep(directory_path):
-    command = [
-        "az",
-        "deployment",
-        "group",
-        "create",
-        "--resource-group",
-        RESOURCE_GROUP,
-        "--template-file",
-        os.path.join(directory_path, BICEP_FILE),
-        "--parameters",
-        os.path.join(directory_path, PARAMETERS_FILE),
-    ]
-
-    try:
-        result = subprocess.run(command, check=True, capture_output=True, text=True, shell=True)
-        return True, result.stdout
-    except subprocess.CalledProcessError as e:
-        return False, e.stderr
 
 
 if __name__ == "__main__":

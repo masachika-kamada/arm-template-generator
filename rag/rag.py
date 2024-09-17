@@ -22,18 +22,17 @@ def main():
         openai_api_version="2023-05-15"
     )
     vector_store = initialize_vector_store(
-        index_name="quickstarts",
+        index_name=os.environ.get("INDEX_NAME"),
         embedding_function=embeddings.embed_query
     )
     # vector search
     result_docs = vector_store.similarity_search(
         query="Virtual Machine Linux Deployment",
-        k=3,
+        k=1,
         search_type="hybrid"
     )
-    # print the results
-    for doc in result_docs:
-        print(doc.json(indent=2, ensure_ascii=False))
+    print(result_docs)
+    print("rag source :", result_docs[0].page_content.split("\n")[0].replace("path: ", ""))
 
 
 if __name__ == "__main__":

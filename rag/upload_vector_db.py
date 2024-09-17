@@ -1,17 +1,16 @@
 import os
 from pathlib import Path
+
+from azure.search.documents.indexes.models import (SearchableField,
+                                                   SearchField,
+                                                   SearchFieldDataType,
+                                                   SimpleField)
 from dotenv import load_dotenv
-from azure.search.documents.indexes.models import (
-    SearchableField,
-    SearchField,
-    SearchFieldDataType,
-    SimpleField,
-)
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain_community.vectorstores.azuresearch import AzureSearch
 from langchain_openai import AzureOpenAIEmbeddings
 
-load_dotenv(Path(__file__).parent/"../.env")
+load_dotenv("../.env")
 
 
 def load_documents(directory_path):
