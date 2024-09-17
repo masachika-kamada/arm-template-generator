@@ -3,4 +3,10 @@ ignore/
 __pycache__/
 venv/
 deploy/
-*.json
+message.json
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
