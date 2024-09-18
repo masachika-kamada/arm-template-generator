@@ -40,7 +40,7 @@ class BicepDeployer:
 
     def generate_bicep_template(self, mslearn_content):
         similar_doc = self.vector_store.similarity_search(
-            query="Virtual Machine Linux Deployment",
+            query=mslearn_content,
             k=1,
             search_type="hybrid"
         )
